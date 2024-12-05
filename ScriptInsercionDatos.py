@@ -43,12 +43,14 @@ class Responsable:
             self.nombre = nombre
             self.fecha = fecha
             self.motivoNoAsigno = MotivoNoAsigno
+        def __str__(self):
+            return f"Nombre: {self.nombre}\nRFC: {self.rfc}\nFecha: {self.fecha}\nMotivoNA: {self.motivoNoAsigno}\n"
                     
 #Abriendo el archivo de Excel.
 try:
     excelFile = pd.read_excel("./PADRON DE BIENES PARAVALIDAR.xlsx",
                                header=[1], 
-                               usecols="M:O",
+                               usecols="P:S",
                                dtype={"NÚMERO DE UNIDAD RESPONSABLE": str, 
                                       "NÚMERO UNIDAD PRESUPUESTAL" : str}
                                )
@@ -74,16 +76,16 @@ except pymysql.MySQLError as e:
 
 
 #Obteniendo los primeros 10 elementos.
-registros = excelFile.iloc[:,0:3]
+registros = excelFile.iloc[:,0:4]
 
 
 for index, registro in registros.iterrows():
-    local = Localizacion(registro[0], registro[1], registro[2])
-    print(local) 
+    responsable = Responsable(registro[0], registro[1], registro[2], registro[3])
+    print(responsable) 
     try: 
         cursor = connection.cursor()
-        sql = f"INSERT INTO localizacion (loc_unidadResponsable, loc_unidadPresupuestal, loc_domicilio) VALUES (%s,%s,%s)"
-        cursor.execute(sql, (local.unidadResp, local.unidadPres, local.domicilio))
+        sql = f"INSERT INTO responsable (res_rfc, res_nombre, res_fechaResguardo, res_motivoNoAsigno) VALUES (%s,%s,%s,%s)"
+        cursor.execute(sql, (responsable.rfc, responsable.nombre, responsable.fecha, responsable.motivoNoAsigno))
     except pymysql.MySQLError as error:
         print(error)
     print(f"Analicé {index}")
